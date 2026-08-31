@@ -17,31 +17,51 @@ Markdown versions of each PDF live alongside them in `docs/`.
 
 ```bash
 pip install -r requirements.txt
-cp .env.local.example .env.local   # then add your API key
+cp .env.local.example .env.local
 ```
 
-`.env.local`:
+### Option A — Anthropic (full quality)
+
+Add your API key to `.env.local`:
 ```
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## Usage
-
-**1. Upload PDFs to Anthropic (one-time):**
+Then upload PDFs once:
 ```bash
 python3 scripts/upload.py
+python3 scripts/ask.py
 ```
 
-**2. Ask questions:**
+### Option B — Ollama (local, no API key needed)
+
 ```bash
-# interactive chat
+brew install ollama
+ollama serve &
+ollama pull llama3.2
+python3 scripts/ask.py --local   # auto-detects no API key, uses Ollama
+```
+
+The script auto-selects the provider: Anthropic if `ANTHROPIC_API_KEY` is set, Ollama otherwise.
+
+## Usage
+
+```bash
+# Interactive chat
 python3 scripts/ask.py
 
-# single question
+# Single question
 python3 scripts/ask.py "What surfaces does VHB Max bond to?"
+
+# Force local markdown mode (skips Files API)
+python3 scripts/ask.py --local
+python3 scripts/ask.py --local "What is the flash point?"
+
+# Use a different Ollama model
+OLLAMA_MODEL=mistral python3 scripts/ask.py --local
 ```
 
-**3. Re-convert PDFs to markdown** (if source PDFs change):
+**Re-convert PDFs to markdown** (if source PDFs change):
 ```bash
 python3 scripts/convert.py
 ```
