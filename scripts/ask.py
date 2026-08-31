@@ -2,11 +2,22 @@
 """Ask questions about 3M VHB Tape Max docs via Anthropic Files API."""
 
 import json
+import os
 import sys
 from pathlib import Path
 import anthropic
 
-FILES_JSON = Path(__file__).parent / "files.json"
+ROOT = Path(__file__).parent.parent
+
+# Load .env.local if present
+_env = ROOT / ".env.local"
+if _env.exists():
+    for line in _env.read_text().splitlines():
+        if "=" in line and not line.startswith("#"):
+            k, _, v = line.partition("=")
+            os.environ.setdefault(k.strip(), v.strip())
+
+FILES_JSON = ROOT / "files.json"
 
 SYSTEM = (
     "You are a product expert on 3M VHB Tape Max and related products. "
@@ -19,7 +30,7 @@ client = anthropic.Anthropic()
 
 def load_registry() -> dict[str, str]:
     if not FILES_JSON.exists():
-        print("No files.json found. Run: python3 upload.py")
+        print("No files.json found. Run: python3 scripts/upload.py")
         sys.exit(1)
     return json.loads(FILES_JSON.read_text())
 
@@ -89,7 +100,7 @@ def chat():
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        # Single question mode: python3 ask.py "What is the flash point?"
+        # Single question mode: python3 scripts/ask.py "What is the flash point?"
         print(ask(" ".join(sys.argv[1:])))
     else:
         # Interactive chat mode

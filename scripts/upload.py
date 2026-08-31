@@ -3,11 +3,22 @@
 
 import json
 import os
+import sys
 from pathlib import Path
 import anthropic
 
-FILES_JSON = Path(__file__).parent / "files.json"
-PDF_DIR = Path(__file__).parent
+ROOT = Path(__file__).parent.parent
+
+# Load .env.local if present
+_env = ROOT / ".env.local"
+if _env.exists():
+    for line in _env.read_text().splitlines():
+        if "=" in line and not line.startswith("#"):
+            k, _, v = line.partition("=")
+            os.environ.setdefault(k.strip(), v.strip())
+
+FILES_JSON = ROOT / "files.json"
+PDF_DIR = ROOT / "docs"
 
 client = anthropic.Anthropic()
 
@@ -17,7 +28,7 @@ def upload_all():
 
     pdfs = sorted(PDF_DIR.glob("*.pdf"))
     if not pdfs:
-        print("No PDFs found.")
+        print(f"No PDFs found in {PDF_DIR}")
         return
 
     for pdf in pdfs:
@@ -43,7 +54,6 @@ def list_uploaded():
 
 
 if __name__ == "__main__":
-    import sys
     if "--list" in sys.argv:
         list_uploaded()
     else:
